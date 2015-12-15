@@ -1,0 +1,13 @@
+#!/bin/bash
+
+while read line; do
+    regex="[[:space:]]*#[^\n]*";
+    line=${line%%$regex}; # strip trailing whitespace and comments
+    regex="=[^\n]*";
+    if [ "${line%%$regex}" == "PORT" ]; then
+        PORT=${line:5};
+        break;
+    fi
+done < options
+
+socat TCP4-LISTEN:$PORT,pktinfo,fork EXEC:./server
