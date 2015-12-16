@@ -1,0 +1,18 @@
+#!/bin/bash
+
+set -f
+directory() {
+}
+
+read $method $requested_file $http_version
+
+echo [`date`]: $SOCAT_PEERADDR accessed $requested_file >> activity.log # log requests
+touch unique_ips.log
+if ! grep -q "$SOCAT_PEERADDR" unique_ips.log; then
+    echo $SOCAT_PEERADDR >> unique_ips.log;
+fi
+
+while read line; do
+    # do stuff
+done
+
