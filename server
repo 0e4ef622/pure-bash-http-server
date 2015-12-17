@@ -1,7 +1,13 @@
 #!/bin/bash
 
 set -f
-directory() {
+
+response="";
+status_code=200;
+status_msg="OK";
+content_type="";
+
+get_dir() {
 }
 
 read $method $requested_file $http_version
@@ -13,6 +19,10 @@ if ! grep -q "$SOCAT_PEERADDR" unique_ips.log; then
 fi
 
 while read line; do
-    # do stuff
+    # read headers and do something with them
+    if [ -z "$line" ]; then
+        break;
+    fi
 done
+
 
