@@ -1,5 +1,7 @@
 #!/bin/bash
 
+PORT=80
+
 while read line; do
     regex="[[:space:]]*#[^\n]*";
     line=${line%%$regex}; # strip trailing whitespace and comments
