@@ -19,6 +19,7 @@ while read line; do
 done < options
 
 get_dir() {
+    dir=$1;
 }
 
 read $method $requested_file $http_version;
@@ -36,4 +37,16 @@ while read line; do
     fi
 done
 
+if [ -e "$rootdir$requested_file" ]; then
+    if [ -d "$rootdir$requested_file" ]; then
+        get_dir $rootdir$requested_file;
+    else
+        get_file $rootdir$requested_file;
+    fi
+else
+    do_404;
+fi
 
+echo "HTTP/1.1 $status_code $status_msg"
+echo "Content-Type: $content_type"
+echo "Content-Length: $(echo "$response" | wc -c)
