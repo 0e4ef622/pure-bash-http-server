@@ -9,11 +9,9 @@ content_type="";
 rootdir="./rootdir";
 
 while read line; do
-    regex="[[:space:]]*#[^\n]*";
-    line=${line%%$regex}; # strip trailing whitespace and comments
-    regex="[[:space:]]*";
-    line=${line##$regex}; # strip leading whitespace
-    regex="=[^\n]*";
+    line=${line%%#*}; # strip comments
+    read line <<< "$line"; # trim whitespace
+    regex="=*";
     if [ "${line%%$regex}" == "ROOTDIR" ]; then
         rootdir=${line:8};
         break;
