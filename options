@@ -1,2 +1,4 @@
 # bash server config file
 PORT=2000 # this is a comment
+
+# ROOTDIR=./path/to/root/dir # default is ./rootdir

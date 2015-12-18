@@ -1,19 +1,32 @@
 #!/bin/bash
 
-set -f
+set -f;
 
 response="";
 status_code=200;
 status_msg="OK";
 content_type="";
+rootdir="./rootdir";
+
+while read line; do
+    regex="[[:space:]]*#[^\n]*";
+    line=${line%%$regex}; # strip trailing whitespace and comments
+    regex="[[:space:]]*";
+    line=${line##$regex}; # strip leading whitespace
+    regex="=[^\n]*";
+    if [ "${line%%$regex}" == "ROOTDIR" ]; then
+        rootdir=${line:8};
+        break;
+    fi
+done < options
 
 get_dir() {
 }
 
-read $method $requested_file $http_version
+read $method $requested_file $http_version;
 
-echo [`date`]: $SOCAT_PEERADDR accessed $requested_file >> activity.log # log requests
-touch unique_ips.log
+echo [`date`]: $SOCAT_PEERADDR accessed $requested_file >> activity.log; # log requests
+touch unique_ips.log;
 if ! grep -q "$SOCAT_PEERADDR" unique_ips.log; then
     echo $SOCAT_PEERADDR >> unique_ips.log;
 fi
