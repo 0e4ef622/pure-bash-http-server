@@ -12,4 +12,6 @@ while read line; do
     fi
 done < options
 
+echo "Running server on port $PORT";
+
 socat TCP4-LISTEN:$PORT,pktinfo,fork EXEC:./server

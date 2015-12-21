@@ -11,8 +11,7 @@ rootdir="./rootdir";
 while read line; do
     line=${line%%#*}; # strip comments
     read line <<< "$line"; # trim whitespace
-    regex="=*";
-    if [ "${line%%$regex}" == "ROOTDIR" ]; then
+    if [ "${line%%=*}" == "ROOTDIR" ]; then
         rootdir=${line:8};
         break;
     fi
@@ -22,7 +21,15 @@ get_dir() {
     dir=$1;
 }
 
-read $method $requested_file $http_version;
+get_file() {
+    file="$1";
+    # response=$(cat $file); # lets not use cat because I WANT TO
+    read -d '' < "$file";
+    response="$REPLY";
+    read _ content_type < <(file --mime-type $file);
+}
+
+read method requested_file http_version;
 
 echo [`date`]: $SOCAT_PEERADDR accessed $requested_file >> activity.log; # log requests
 touch unique_ips.log;
@@ -32,6 +39,7 @@ fi
 
 while read line; do
     # read headers and do something with them
+    line=${line///};
     if [ -z "$line" ]; then
         break;
     fi
@@ -39,17 +47,17 @@ done
 
 if [ -e "$rootdir$requested_file" ]; then
     if [ -d "$rootdir$requested_file" ]; then
-        get_dir $rootdir$requested_file;
+        get_dir "$rootdir$requested_file";
     else
-        get_file $rootdir$requested_file;
+        get_file "$rootdir$requested_file";
     fi
 else
     do_404;
 fi
 
-echo "HTTP/1.1 $status_code $status_msg"
-echo "Content-Type: $content_type"
-echo "Content-Length: $(echo "$response" | wc -c)"
-echo "Connection: close"
-echo ""
-echo "$response"
+echo "HTTP/1.1 $status_code $status_msg";
+echo "Content-Type: $content_type";
+echo "Content-Length: $(echo -n "$response" | wc -c)";
+echo "Connection: close";
+echo "";
+echo "$response";
