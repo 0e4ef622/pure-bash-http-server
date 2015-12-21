@@ -5,7 +5,8 @@ set -f;
 response="";
 status_code=200;
 status_msg="OK";
-content_type="";
+content_type="text/plain";
+other_response_headers="";
 rootdir="./rootdir";
 
 while read line; do
@@ -17,16 +18,38 @@ while read line; do
     fi
 done < options
 
+redirect_to() {
+    status_code=301;
+    status_msg="Moved Permanently";
+    other_response_headers="$other_response_headers""Location: $1
+";
+}
+
 get_dir() {
-    dir=$1;
+    len=${#1};
+    len=$((len-1));
+    if [ "${1:$len:1}" != "/" ]; then
+        redirect_to "$1/";
+        return;
+    fi
+
+    dir="$rootdir$1";
+    if [ -e "$dir/index.html" ]; then
+        get_file "$1/index.html";
+    fi
 }
 
 get_file() {
-    file="$1";
+    file="$rootdir$1";
     # response=$(cat $file); # lets not use cat because I WANT TO
     read -d '' < "$file";
     response="$REPLY";
     read _ content_type < <(file --mime-type $file);
+}
+
+do_404() {
+    status_code=404;
+    status_msg="Not Found";
 }
 
 read method requested_file http_version;
@@ -39,7 +62,7 @@ fi
 
 while read line; do
     # read headers and do something with them
-    line=${line///};
+    line=${line///}; # kill those pesky CRs
     if [ -z "$line" ]; then
         break;
     fi
@@ -47,9 +70,9 @@ done
 
 if [ -e "$rootdir$requested_file" ]; then
     if [ -d "$rootdir$requested_file" ]; then
-        get_dir "$rootdir$requested_file";
+        get_dir "$requested_file";
     else
-        get_file "$rootdir$requested_file";
+        get_file "$requested_file";
     fi
 else
     do_404;
@@ -59,5 +82,6 @@ echo "HTTP/1.1 $status_code $status_msg";
 echo "Content-Type: $content_type";
 echo "Content-Length: $(echo -n "$response" | wc -c)";
 echo "Connection: close";
+echo -n "$other_response_headers";
 echo "";
 echo "$response";
