@@ -133,7 +133,7 @@ while [ "$header_Connection" == "keep-alive" ]; do
     #echo -e "Accept-Ranges: bytes\r";
     echo -e "Date: $date\r";
     if [ -z "$content_type" ]; then echo -e "Content-Type: $content_type\r"; fi
-    echo -e "Content-Length: $(echo -n "$response" | wc -c)\r";
+    echo -e "Content-Length: ${#response}\r";
     echo -e "Connection: $header_Connection\r";
     echo -e -n "$other_response_headers";
     echo -e "\r";
