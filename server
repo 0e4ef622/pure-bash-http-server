@@ -2,13 +2,9 @@
 
 set -f;
 
-response="";
-status_code=200;
-status_msg="OK";
-content_type="text/plain";
-other_response_headers="";
 rootdir="./rootdir";
 error_404_page="/404.html"; # inside ./rootdir
+header_Connection="keep-alive";
 
 while read line; do
     line=${line%%#*}; # strip comments
@@ -24,6 +20,8 @@ redirect_to() {
     status_code=301;
     status_msg="Moved Permanently";
     other_response_headers="$other_response_headers""Location: $1\r\n";
+    response="";
+    content_type="text/plain";
 }
 
 get_dir() {
@@ -75,60 +73,69 @@ get_range() {
     status_msg="Partial Content";
 }
 
-read method requested_file http_version;
+while [ "$header_Connection" == "keep-alive" ]; do
+    response="";
+    status_code=200;
+    status_msg="OK";
+    content_type="text/plain";
+    other_response_headers="";
+    read method requested_file http_version;
 
-echo [`date`]: $SOCAT_PEERADDR accessed $requested_file >> activity.log; # log requests
-touch unique_ips.log;
-if ! grep -q "$SOCAT_PEERADDR" unique_ips.log; then
-    echo $SOCAT_PEERADDR >> unique_ips.log;
-fi
-
-while read line; do
-    # read headers and do something with them
-    line=${line///}; # kill those pesky CRs
-
-    header=${line%%:*}; # the stuff before the semicolon
-    value=${line#*: }; # the stuff after the semicolon and space
-    value=${value//\'/\\\'}; # sanitize
-
-    header=${header//-/_};
-    if [ "$header" != "${header/[^a-zA-Z_0-9]/}" ]; then
-        status_code=400;
-        status_msg="Bad Request";
-        response="quit tryin to hax mah server";
-        break;
+    echo [`date`]: $SOCAT_PEERADDR accessed $requested_file >> activity.log; # log requests
+    touch unique_ips.log;
+    if ! grep -q "$SOCAT_PEERADDR" unique_ips.log; then
+        echo $SOCAT_PEERADDR >> unique_ips.log;
     fi
-    eval "header_$header='$value'";
-    if [ -z "$line" ]; then
-        break;
-    fi
-done
 
-if [ "$status_code" != "400" ]; then
-    if [ -e "$rootdir$requested_file" ]; then
-        if [ -d "$rootdir$requested_file" ]; then
-            get_dir "$requested_file";
-        else
-            if [ -z "$header_Range" ] && [ "$method" == "GET" ]; then
-                get_range "$requested_file" "$header_Range";
-            else
-                get_file "$requested_file";
-            fi
+    while read line; do
+        # read headers and do something with them
+        line=${line///}; # kill those pesky CRs
+
+        header=${line%%:*}; # the stuff before the semicolon
+        value=${line#*: }; # the stuff after the semicolon and space
+        value=${value//\'/\\\'}; # sanitize
+
+        header=${header//-/_};
+        if [ "$header" != "${header/[^a-zA-Z_0-9]/}" ]; then
+            status_code=400;
+            status_msg="Bad Request";
+            response="quit tryin to hax mah server";
+            break;
         fi
-    else
-        do_404;
+        eval "header_$header='$value'";
+        if [ -z "$line" ]; then
+            break;
+        fi
+    done
+
+    if [ "$status_code" != "400" ]; then
+        if [ -e "$rootdir$requested_file" ]; then
+            if [ -d "$rootdir$requested_file" ]; then
+                get_dir "$requested_file";
+            else
+                #if [ -z "$header_Range" ] && [ "$method" == "GET" ]; then
+                #    get_range "$requested_file" "$header_Range";
+                #else
+                get_file "$requested_file";
+                #fi
+            fi
+            status_code=200;
+            status_msg="OK";
+        else
+            do_404;
+        fi
     fi
-fi
 
-date=$(date -u -R);
-date="${date% *} GMT";
+    date=$(date -u -R);
+    date="${date% *} GMT";
 
-echo -e "HTTP/1.1 $status_code $status_msg\r";
-#echo -e "Accept-Ranges: bytes\r";
-echo -e "Date: $date\r";
-if [ -z "$content_type" ]; then echo -e "Content-Type: $content_type\r"; fi
-echo -e "Content-Length: $(echo -n "$response" | wc -c)\r";
-echo -e "Connection: close\r";
-echo -e -n "$other_response_headers";
-echo -e "\r";
-echo "$response";
+    echo -e "HTTP/1.1 $status_code $status_msg\r";
+    #echo -e "Accept-Ranges: bytes\r";
+    echo -e "Date: $date\r";
+    if [ -z "$content_type" ]; then echo -e "Content-Type: $content_type\r"; fi
+    echo -e "Content-Length: $(echo -n "$response" | wc -c)\r";
+    echo -e "Connection: $header_Connection\r";
+    echo -e -n "$other_response_headers";
+    echo -e "\r";
+    echo -n "$response";
+done
