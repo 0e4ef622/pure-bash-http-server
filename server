@@ -15,7 +15,6 @@ while read line; do
     read line <<< "$line"; # trim whitespace
     if [ "${line%%=*}" == "ROOTDIR" ]; then
         rootdir=${line:8};
-        break;
     elif [ "${line%%=*}" == "404_PAGE" ]; then
         error_404_page=${line:9};
     fi
