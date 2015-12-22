@@ -3,10 +3,9 @@
 PORT=80
 
 while read line; do
-    regex="[[:space:]]*#[^\n]*";
-    line=${line%%$regex}; # strip trailing whitespace and comments
-    regex="=[^\n]*";
-    if [ "${line%%$regex}" == "PORT" ]; then
+    line=${line%%#*}; # strip comments
+    read line <<< "$line"; # trim whitespace
+    if [ "${line%%=*}" == "PORT" ]; then
         PORT=${line:5};
         break;
     fi
