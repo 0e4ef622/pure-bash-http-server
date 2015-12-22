@@ -8,7 +8,7 @@ status_msg="OK";
 content_type="text/plain";
 other_response_headers="";
 rootdir="./rootdir";
-error_404_page="404.html"; # inside ./rootdir
+error_404_page="/404.html"; # inside ./rootdir
 
 while read line; do
     line=${line%%#*}; # strip comments
@@ -16,6 +16,8 @@ while read line; do
     if [ "${line%%=*}" == "ROOTDIR" ]; then
         rootdir=${line:8};
         break;
+    elif [ "${line%%=*}" == "404_PAGE" ]; then
+        error_404_page=${line:9};
     fi
 done < options
 
@@ -51,7 +53,7 @@ get_file() {
 do_404() {
     status_code=404;
     status_msg="Not Found";
-    get_file "/$error_404_page";
+    get_file "$error_404_page";
 }
 
 read method requested_file http_version;
