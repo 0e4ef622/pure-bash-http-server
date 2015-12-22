@@ -23,12 +23,11 @@ done < options
 redirect_to() {
     status_code=301;
     status_msg="Moved Permanently";
-    other_response_headers="$other_response_headers""Location: $1
-";
+    other_response_headers="$other_response_headers""Location: $1\r\n";
 }
 
 get_dir() {
-    len=${#1};
+    local len=${#1};
     len=$((len-1));
     if [ "${1:$len:1}" != "/" ]; then
         redirect_to "$1/";
@@ -38,6 +37,8 @@ get_dir() {
     dir="$rootdir$1";
     if [ -e "$dir/index.html" ]; then
         get_file "$1/index.html";
+    else
+        response="uhh... i cant find an index.html... HELP WHAT DO I DO? D:";
     fi
 }
 
@@ -55,6 +56,25 @@ do_404() {
     get_file "$error_404_page";
 }
 
+get_range() {
+    # TODO: finish
+    IFS="=" read unit range <<< "$2";
+    if [ "$unit" != "bytes" ]; then
+        get_file "$1";
+        return;
+    fi
+    if [ "${range/,/}" != "$range" ]; then # if theres more than one range
+        status_code=416;
+        status_msg="Range Not Satisfiable";
+        content_type="";
+        return;
+    fi
+    get_file "$1";
+    IFS="-" read begin end <<< "$range";
+    status_code=206
+    status_msg="Partial Content";
+}
+
 read method requested_file http_version;
 
 echo [`date`]: $SOCAT_PEERADDR accessed $requested_file >> activity.log; # log requests
@@ -66,6 +86,13 @@ fi
 while read line; do
     # read headers and do something with them
     line=${line///}; # kill those pesky CRs
+
+    header=${line%%:*}; # the stuff before the semicolon
+    value=${line#*: }; # the stuff after the semicolon and space
+    value=${value//\'/\\\'};
+
+    header=${header//-/_};
+    eval "header_$header='$value'";
     if [ -z "$line" ]; then
         break;
     fi
@@ -75,16 +102,25 @@ if [ -e "$rootdir$requested_file" ]; then
     if [ -d "$rootdir$requested_file" ]; then
         get_dir "$requested_file";
     else
-        get_file "$requested_file";
+        if [ -z "$header_Range" ] && [ "$method" == "GET" ]; then
+            get_range "$requested_file" "$header_Range";
+        else
+            get_file "$requested_file";
+        fi
     fi
 else
     do_404;
 fi
 
-echo "HTTP/1.1 $status_code $status_msg";
-echo "Content-Type: $content_type";
-echo "Content-Length: $(echo -n "$response" | wc -c)";
-echo "Connection: close";
-echo -n "$other_response_headers";
-echo "";
+date=$(date -u -R);
+date="${date% *} GMT";
+
+echo -e "HTTP/1.1 $status_code $status_msg\r";
+#echo -e "Accept-Ranges: bytes\r";
+echo -e "Date: $date\r";
+if [ -z "$content_type" ]; then echo -e "Content-Type: $content_type\r"; fi
+echo -e "Content-Length: $(echo -n "$response" | wc -c)\r";
+echo -e "Connection: close\r";
+echo -e -n "$other_response_headers";
+echo -e "\r";
 echo "$response";
