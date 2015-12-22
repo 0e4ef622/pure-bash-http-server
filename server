@@ -92,7 +92,7 @@ while read line; do
     value=${value//\'/\\\'}; # sanitize
 
     header=${header//-/_};
-    if [ "$header" != "${header//[^a-zA-Z_0-9]/}" ]; then
+    if [ "$header" != "${header/[^a-zA-Z_0-9]/}" ]; then
         status_code=400;
         status_msg="Bad Request";
         response="quit tryin to hax mah server";
