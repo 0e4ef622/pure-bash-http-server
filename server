@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -f;
+LC_ALL="C"; # count bytes when doing stuff like ${#this}
 
 rootdir="./rootdir";
 error_404_page="/404.html"; # inside ./rootdir
@@ -15,6 +16,34 @@ while read line; do
         error_404_page=${line:9};
     fi
 done < options
+
+# BEGIN UGLY BINARY HACKS
+
+split_file() { # split input along null bytes
+    # Usage: split VAR < FILE
+    local i=0;
+    while read -r -d ''; do
+        REPLY=${REPLY//\'/\'\"\'\"\'};
+        eval "$1[$((i++))]='$REPLY'";
+    done
+    REPLY=${REPLY//\'/\'\"\'\"\'};
+    eval "$1[$i]='$REPLY'";
+}
+
+join_file() { # undo what split_file did
+    # Usage: join VAR[@] > FILE; example: join image[@] > image.png
+    local i=0;
+    local arr=("${!1}");
+    local arrlen=${#arr[@]};
+    for piece in "${arr[@]}"; do
+        echo -n "$piece";
+        if [ $((i++)) -lt $(( arrlen - 1 )) ]; then
+            echo -en '\x00';
+        fi
+    done
+}
+
+# END UGLY BINARY HACKS
 
 redirect_to() {
     status_code=301;
@@ -43,8 +72,7 @@ get_dir() {
 get_file() {
     file="$rootdir$1";
     # response=$(cat $file); # lets not use cat because I WANT TO
-    read -d '' < "$file";
-    response="$REPLY";
+    split_file response < "$file";
     read _ content_type < <(file --mime-type $file);
 }
 
@@ -74,7 +102,7 @@ get_range() {
 }
 
 while [ "$header_Connection" == "keep-alive" ]; do
-    response="";
+    unset response; # if the requested file is a binary file, this will become an array of data to be joined by null bytes
     status_code=200;
     status_msg="OK";
     content_type="text/plain";
@@ -133,9 +161,10 @@ while [ "$header_Connection" == "keep-alive" ]; do
     #echo -e "Accept-Ranges: bytes\r";
     echo -e "Date: $date\r";
     if [ -z "$content_type" ]; then echo -e "Content-Type: $content_type\r"; fi
-    echo -e "Content-Length: ${#response}\r";
+    tmp="${response[*]}";
+    echo -e "Content-Length: ${#tmp}\r";
     echo -e "Connection: $header_Connection\r";
     echo -e -n "$other_response_headers";
     echo -e "\r";
-    echo -n "$response";
+    join_file response[@];
 done
