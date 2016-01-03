@@ -108,6 +108,9 @@ while [ "$header_Connection" == "keep-alive" ]; do
     content_type="text/plain";
     other_response_headers="";
     read method requested_file http_version;
+    requested_file=${requested_file//\\/\\\\};
+    requested_file=${requested_file//%/\\x};
+    requested_file=$(echo -en "$fiel");
 
     echo [`date`]: $SOCAT_PEERADDR accessed $requested_file >> activity.log; # log requests
     touch unique_ips.log;
