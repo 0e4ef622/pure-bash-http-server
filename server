@@ -110,11 +110,22 @@ while [ "$header_Connection" == "keep-alive" ]; do
     read method requested_file http_version;
     requested_file=${requested_file//\\/\\\\};
     requested_file=${requested_file//%/\\x};
-    requested_file=$(echo -en "$fiel");
+    requested_file=$(echo -en "$requested_file");
 
     echo [`date`]: $SOCAT_PEERADDR accessed $requested_file >> activity.log; # log requests
-    touch unique_ips.log;
-    if ! grep -q "$SOCAT_PEERADDR" unique_ips.log; then
+    #touch unique_ips.log;
+    #if ! grep -q "$SOCAT_PEERADDR" unique_ips.log; then
+    #    echo $SOCAT_PEERADDR >> unique_ips.log;
+    #fi
+    >> unique_ips.log;
+    ipfound=0;
+    while read ip _; do
+        if [ "$ip" == "$SOCAT_PEERADDR" ]; then
+            ipfound=1;
+            break;
+        fi
+    done < unique_ips.log
+    if [ "$ipfound" == "1" ]; then
         echo $SOCAT_PEERADDR >> unique_ips.log;
     fi
 
@@ -150,8 +161,6 @@ while [ "$header_Connection" == "keep-alive" ]; do
                 get_file "$requested_file";
                 #fi
             fi
-            status_code=200;
-            status_msg="OK";
         else
             do_404;
         fi
