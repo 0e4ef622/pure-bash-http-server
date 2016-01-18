@@ -125,7 +125,7 @@ while [ "$header_Connection" == "keep-alive" ]; do
             break;
         fi
     done < unique_ips.log
-    if [ "$ipfound" == "1" ]; then
+    if [ "$ipfound" == "0" ]; then
         echo $SOCAT_PEERADDR >> unique_ips.log;
     fi
 
