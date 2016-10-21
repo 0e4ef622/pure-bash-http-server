@@ -55,7 +55,6 @@ get_dir() {
     if [ -e "$dir/index.html" ]; then
         get_file "$1/index.html";
     else
-        #response="uhh... i cant find an index.html... HELP WHAT DO I DO? D:";
         response="<!DOCTYPE html>
          <html>
              <head>
@@ -72,7 +71,6 @@ get_dir() {
 
 get_file() {
     file="$rootdir$1";
-    # response=$(cat $file); # lets not use cat because I WANT TO
     if [ -x "$file" ]; then
         split_file response < <("$file");
     else
