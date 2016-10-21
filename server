@@ -55,7 +55,18 @@ get_dir() {
     if [ -e "$dir/index.html" ]; then
         get_file "$1/index.html";
     else
-        response="uhh... i cant find an index.html... HELP WHAT DO I DO? D:";
+        #response="uhh... i cant find an index.html... HELP WHAT DO I DO? D:";
+        response="<!DOCTYPE html>
+         <html>
+             <head>
+                 <title>Index of $1</title>
+             </head>
+             <body>
+                 <h1>Index of $1</h1>
+                 <hr/>
+                 $( (set +f; cd "$dir"; for i in *; do echo "<a href=\"$i\">$i</a><br/>"; done) )
+             </body>
+         </html>";
     fi
 }
 
@@ -67,6 +78,7 @@ get_file() {
     else
         split_file response < "$file";
     fi
+    # TODO get rid of this  v  file
     read _ content_type < <(file --mime-type $file);
 }
 
