@@ -1,16 +1,23 @@
 #!/bin/bash
 
-PORT=80
+PORT=80 # default port
+rootdir="./rootdir";
+error_404_page="/404.html"; # inside ./rootdir
 
 while read line; do
     line=${line%%#*}; # strip comments
     read line <<< "$line"; # trim whitespace
     if [ "${line%%=*}" == "PORT" ]; then
         PORT=${line:5};
-        break;
+    elif [ "${line%%=*}" == "ROOTDIR" ]; then
+        rootdir=${line:8};
+    elif [ "${line%%=*}" == "404_PAGE" ]; then
+        error_404_page=${line:9};
     fi
 done < options
 
 echo "Running server on port $PORT";
 
+export rootdir;
+export err_404_page;
 socat TCP4-LISTEN:$PORT,pktinfo,fork EXEC:./server
