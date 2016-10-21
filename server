@@ -72,7 +72,11 @@ get_dir() {
 get_file() {
     file="$rootdir$1";
     # response=$(cat $file); # lets not use cat because I WANT TO
-    split_file response < "$file";
+    if [ -x "$file" ]; then
+        split_file response < <("$file");
+    else
+        split_file response < "$file";
+    fi
     read _ content_type < <(file --mime-type $file);
 }
 
