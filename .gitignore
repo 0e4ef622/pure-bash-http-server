@@ -1,5 +1,3 @@
-*.swp
-*.swo
 rootdir/*
 !rootdir/404.html
 activity.log
