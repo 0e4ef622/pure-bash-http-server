@@ -180,7 +180,7 @@ while [ "$header_Connection" == "keep-alive" ]; do
     echo -e "HTTP/1.1 $status_code $status_msg\r";
     #echo -e "Accept-Ranges: bytes\r";
     echo -e "Date: $date\r";
-    if [ -z "$content_type" ]; then echo -e "Content-Type: $content_type\r"; fi
+    if [ -n "$content_type" ]; then echo -e "Content-Type: $content_type\r"; fi
     tmp="${response[*]}";
     echo -e "Content-Length: ${#tmp}\r";
     echo -e "Connection: $header_Connection\r";
