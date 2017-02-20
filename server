@@ -125,7 +125,7 @@ while [ "$header_Connection" == "keep-alive" ]; do
     requested_file=${requested_file//%/\\x};
     requested_file=$(echo -en "$requested_file");
 
-    echo [`date`]: $SOCAT_PEERADDR accessed $requested_file >> activity.log; # log requests
+    echo [`printf '%(%a %b %d %T %Z %Y)T\n' -1`]: $SOCAT_PEERADDR accessed $requested_file >> activity.log; # log requests
     >> unique_ips.log;
     ipfound=0;
     while read ip _; do
@@ -175,7 +175,7 @@ while [ "$header_Connection" == "keep-alive" ]; do
         fi
     fi
 
-    date=$(date -u -R);
+    date=$(TZ=UTC printf '%(%a, %d %b %Y %T GMT)T\n' -1);
     date="${date% *} GMT";
 
     echo -e "HTTP/1.1 $status_code $status_msg\r";
