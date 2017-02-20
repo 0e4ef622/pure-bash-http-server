@@ -19,5 +19,5 @@ done < options
 echo "Running server on port $PORT";
 
 export rootdir;
-export err_404_page;
+export error_404_page;
 socat TCP4-LISTEN:$PORT,pktinfo,fork EXEC:./server
