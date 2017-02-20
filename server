@@ -5,6 +5,7 @@ LC_ALL="C"; # count bytes when doing stuff like ${#this}
 
 rootdir=${rootdir:-"./rootdir"};
 error_404_page=${error_404_page:-"/404.html"}; # inside ./rootdir
+echo "$error_404_page" >&2;
 header_Connection="keep-alive";
 
 # BEGIN UGLY BINARY HACKS
@@ -56,16 +57,24 @@ get_dir() {
         get_file "$1/index.html";
     else
         response="<!DOCTYPE html>
-         <html>
-             <head>
-                 <title>Index of $1</title>
-             </head>
-             <body>
-                 <h1>Index of $1</h1>
-                 <hr/>
-                 $( (set +f; cd "$dir"; for i in *; do echo "<a href=\"$i\">$i</a><br/>"; done) )
-             </body>
-         </html>";
+<html>
+    <head>
+        <title>Index of $1</title>
+    </head>
+    <body>
+        <h1>Index of $1</h1>
+        <hr/>
+        $( (set +f;
+            cd "$dir";
+            shopt -s extglob;
+            [ "${1##+(/)}" ] && echo "<a href=\"${1%/*/}/\">..</a><br/>";
+            shopt -u extglob;
+            for i in *; do
+                [ -d "$i" ] && i="$i/"
+                [ -e "$i" ] && echo "<a href=\"$i\">$i</a><br/>";
+            done) )
+    </body>
+</html>";
     fi
 }
 
