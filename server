@@ -55,6 +55,7 @@ get_dir() {
     if [ -e "$dir/index.html" ]; then
         get_file "$1/index.html";
     else
+        content_type="text/html";
         response="<!DOCTYPE html>
 <html>
     <head>
