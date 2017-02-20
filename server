@@ -114,7 +114,7 @@ get_range() {
     status_msg="Partial Content";
 }
 
-while [ "$header_Connection" == "keep-alive" ]; do
+while [ "$header_Connection" = "keep-alive" ]; do
     unset response; # if the requested file is a binary file, this will become an array of data to be joined by null bytes
     status_code=200;
     status_msg="OK";
@@ -130,12 +130,12 @@ while [ "$header_Connection" == "keep-alive" ]; do
     >> unique_ips.log;
     ipfound=0;
     while read ip _; do
-        if [ "$ip" == "$SOCAT_PEERADDR" ]; then
+        if [ "$ip" = "$SOCAT_PEERADDR" ]; then
             ipfound=1;
             break;
         fi
     done < unique_ips.log
-    if [ "$ipfound" == "0" ]; then
+    if [ "$ipfound" = "0" ]; then
         echo $SOCAT_PEERADDR >> unique_ips.log;
     fi
 
@@ -165,7 +165,7 @@ while [ "$header_Connection" == "keep-alive" ]; do
             if [ -d "$rootdir$requested_file" ]; then
                 get_dir "$requested_file";
             else
-                #if [ -z "$header_Range" ] && [ "$method" == "GET" ]; then
+                #if [ -z "$header_Range" ] && [ "$method" = "GET" ]; then
                 #    get_range "$requested_file" "$header_Range";
                 #else
                 get_file "$requested_file";

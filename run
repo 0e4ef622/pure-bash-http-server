@@ -7,11 +7,11 @@ error_404_page="/404.html"; # inside ./rootdir
 while read line; do
     line=${line%%#*}; # strip comments
     read line <<< "$line"; # trim whitespace
-    if [ "${line%%=*}" == "PORT" ]; then
+    if [ "${line%%=*}" = "PORT" ]; then
         PORT=${line:5};
-    elif [ "${line%%=*}" == "ROOTDIR" ]; then
+    elif [ "${line%%=*}" = "ROOTDIR" ]; then
         rootdir=${line:8};
-    elif [ "${line%%=*}" == "404_PAGE" ]; then
+    elif [ "${line%%=*}" = "404_PAGE" ]; then
         error_404_page=${line:9};
     fi
 done < options
