@@ -5,7 +5,6 @@ LC_ALL="C"; # count bytes when doing stuff like ${#this}
 
 rootdir=${rootdir:-"./rootdir"};
 error_404_page=${error_404_page:-"/404.html"}; # inside ./rootdir
-echo "$error_404_page" >&2;
 header_Connection="keep-alive";
 
 # BEGIN UGLY BINARY HACKS
