@@ -88,9 +88,9 @@ get_dir() {
 
 get_file() {
     file="$rootdir$1";
-    if [ -x "$file" ]; then
-        split_file response < <("$file");
-    else
+    #if [ -x "$file" ]; then
+    #    split_file response < <("$file");
+    #else
         split_file response < "$file";
     #fi
 
