@@ -7,6 +7,13 @@ rootdir=${rootdir:-"./rootdir"};
 error_404_page=${error_404_page:-"/404.html"}; # inside ./rootdir
 header_Connection="keep-alive";
 
+declare -A mime_types;
+while read a b; do
+    [ -n "$b" ] && for i in $b; do
+        mime_types["$i"]="$a";
+    done;
+done < mime.types
+
 # BEGIN UGLY BINARY HACKS
 
 split_file() { # split input along null bytes
@@ -74,7 +81,8 @@ get_dir() {
                 [ -e "$i" ] && echo "<a href=\"$i\">$i</a><br/>";
             done) )
     </body>
-</html>";
+</html>
+";
     fi
 }
 
@@ -84,9 +92,24 @@ get_file() {
         split_file response < <("$file");
     else
         split_file response < "$file";
+    #fi
+
+    name=${1##*/};
+    extension=${name##*.};
+
+    if [ "$name" = "$extension" ]; then
+        shopt -s extglob;
+        content_type=$(
+            case "$name" in
+                [Mm]akefile|GNU[Mm]akefile|+([[:upper:]])) echo "text/plain";;
+                *) echo "application/octet-stream";;
+            esac
+        );
+        shopt -u extglob;
+    else
+        content_type=${mime_types[$extension]};
+        [ -z "$content_type" ] && content_type="application/octet-stream";
     fi
-    # TODO get rid of this  v  file
-    read _ content_type < <(file --mime-type $file);
 }
 
 do_404() {
