@@ -1222,7 +1222,6 @@ application/x-ruby											rb
 application/x-rx
 application/x-scilab										sce sci
 application/x-scilab-xcos									xcos
-application/x-sh											sh
 application/x-sha1											sha1
 application/x-shar											shar
 application/x-shellscript
