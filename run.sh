@@ -20,4 +20,4 @@ echo "Running server on port $PORT";
 
 export rootdir;
 export error_404_page;
-socat TCP4-LISTEN:$PORT,pktinfo,fork EXEC:./server
+socat TCP4-LISTEN:$PORT,pktinfo,fork EXEC:./server.sh
