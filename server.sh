@@ -144,6 +144,7 @@ while [ "$header_Connection" = "keep-alive" ]; do
     content_type="text/plain";
     other_response_headers="";
     read method requested_file http_version;
+    [ "$http_version" = "HTTP/1.0" ] && header_Connection="close";
     requested_file=${requested_file%%\?*}; # ignore everything after an ? for now
     requested_file=${requested_file//\\/\\\\};
     requested_file=${requested_file//%/\\x};
