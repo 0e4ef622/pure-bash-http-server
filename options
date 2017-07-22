@@ -1,6 +1,9 @@
 # bash server config file
+# these are all the defaults
 PORT=80 # this is a comment
 
 # ROOTDIR=./path/to/root/dir # default is ./rootdir
 
 # 404_PAGE=/404.html # default is /404.html
+
+# KEEPALIVE_TIMEOUT=10 # timeout of a persistent connection in seconds
