@@ -51,9 +51,7 @@ redirect_to() {
 }
 
 get_dir() {
-    local len=${#1};
-    len=$((len-1));
-    if [ "${1:$len:1}" != "/" ]; then
+    if [ "${1: -1}" != "/" ]; then
         redirect_to "$1/";
         return;
     fi
