@@ -3,8 +3,9 @@
 set -f;
 LC_ALL="C"; # count bytes when doing stuff like ${#this}
 
-rootdir=${rootdir:-"./rootdir"};
-error_404_page=${error_404_page:-"/404.html"}; # inside ./rootdir
+echo New connection with $SOCAT_PEERADDR >> activity.log
+
+: ${rootdir?} ${error_404_page?}
 header_Connection="keep-alive";
 
 declare -A mime_types;
