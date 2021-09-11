@@ -31,7 +31,8 @@ split_file() { # split input along null bytes
 join_file() { # undo what split_file did
     # Usage: join VAR[@] > FILE; example: join image[@] > image.png
     local i=0;
-    local arr=("${!1}");
+    local -a arr;
+    arr=("${!1}"); # https://savannah.gnu.org/support/?110538
     local arrlen=${#arr[@]};
     for piece in "${arr[@]}"; do
         echo -n "$piece";
